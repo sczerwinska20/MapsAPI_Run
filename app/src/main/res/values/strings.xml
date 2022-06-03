@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">MapsAPI_Run</string>
+    <string name="title_activity_maps">MapsActivity</string>
+    <string name="Start">Klick zum Starten</string>#
+    <string name="Stop">Klick zum Stopen</string>
+    <string name="Hello_text">Willkommen bei deiner Jogging App. Du befindest dich hier auf dem Startbildschirm. </string>
+
+
+
+</resources>
