@@ -11,6 +11,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -42,7 +43,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        manager= (LocationManager)  getSystemService(LOCATION_SERVICE);
+        manager= (LocationManager) getSystemService(LOCATION_SERVICE);
 
         reference= FirebaseDatabase.getInstance().getReference().child("User-101");
         //User101 ist für demozwecke
@@ -80,21 +81,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
  * Methode Prüft ob die User-permission im MAnifest hinterlegt ist.
  *Hierbei ist zu beachtend as die Gps Location genauer ist als die Internet-Location
  *  */
-
     private void getLocationUpdates() {
         if (manager != null) {
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED &&
                     ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)== PackageManager.PERMISSION_GRANTED) {
-
-                    if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                        manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DIST, this);
-                    } else if (manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                        manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DIST,this);
-
-                    } else {
-                        Toast.makeText(this, "no Provider...", Toast.LENGTH_SHORT).show();
-                    }
+                                    if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                                        manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DIST, this);
+                                    } else if (manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                                        manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DIST,this);
+                                    } else {
+                                        Toast.makeText(this, "no Provider...", Toast.LENGTH_SHORT).show();
+                                    }
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},101);
             }
@@ -134,4 +132,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void saveLocation(Location location) {
         reference.setValue(location);
     }
+
+    /**
+     *Methode zum abbrechen der Abufzeichnung
+     */
+    public void onClickstopMaps(View view){
+        setContentView(R.layout.activity_main);
+        Toast.makeText(this, "Lauf abgebrochen", Toast.LENGTH_SHORT).show();
+    }
 }
+
+
+
+
+
+

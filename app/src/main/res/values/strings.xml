@@ -1,11 +1,14 @@
 <resources>
+
     <string name="app_name">MapsAPI_Run</string>
     <string name="title_activity_maps">MapsActivity</string>
-    <string name="Start">Klick zum Starten</string>#
-    <string name="Statistic">Hier gehts zu deinen Statistiken</string>#
-    <string name="Close">Klick hier zum verlassen</string>#
-    <string name="Stop">Klick zum Stopen</string>
-    <string name="Share">Klick hier u</string>
+    <string name="title_activity_data">DataActivity</string>
+    <string name="Start">Klick zum Starten</string>
+    <string name="Statistic">Hier gehts zu deinen Statistiken</string>
+    <string name="Close">Klick hier zum verlassen</string>
+    <string name="Stop">Abbrechen</string>
+    <string name="Save">Beenden &amp; Speichern</string>
+    <string name="Share">Klick hier um deine Erfolge zu Teilen</string>
     <string name="Hello_text">Willkommen bei deiner Jogging App. Du befindest dich hier auf dem Startbildschirm. </string>
 
 

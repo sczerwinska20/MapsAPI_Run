@@ -16,16 +16,24 @@
         android:orientation="vertical"
         tools:layout_editor_absoluteX="16dp">
 
+
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="match_parent"
+            android:layout_height="73dp"
+            app:srcCompat="@drawable/common_google_signin_btn_text_dark" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/Hello_text"
-            android:textSize="25sp" />
+            android:textSize="25sp"
+            android:fontFamily="arial"/>
 
         <ImageView
             android:id="@+id/imageView"
             android:layout_width="match_parent"
-            android:layout_height="140dp"
+            android:layout_height="291dp"
             app:srcCompat="@android:drawable/ic_menu_mapmode" />
 
         <LinearLayout
@@ -36,7 +44,7 @@
             <Button
                 android:id="@+id/button"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:onClick="onClickOpenMaps"
                 android:text="@string/Start"
                 tools:ignore="MissingConstraints" />
@@ -44,20 +52,18 @@
             <Button
                 android:id="@+id/button3"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
+                android:onClick="onClickToStatictic"
                 android:text="@string/Statistic" />
 
             <Button
                 android:id="@+id/button2"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/Close" />
+                android:layout_height="60dp"
+                android:text="@string/Close"
+                android:onClick="onClickCloseApp"/>
 
-            <Button
-                android:id="@+id/button4"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/Share" />
+
 
         </LinearLayout>
     </LinearLayout>

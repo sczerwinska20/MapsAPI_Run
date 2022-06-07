@@ -30,4 +30,13 @@ public class MainActivity extends AppCompatActivity {
         intent.setClass(getApplicationContext(),MapsActivity.class);
         startActivity(intent);
     }
+
+    public void onClickCloseApp(View view){
+        finish();
+        System.exit(0);
+    }
+
+    public void onClickstopMaps(View view){
+        setContentView(R.layout.activity_data);
+    }
 }
