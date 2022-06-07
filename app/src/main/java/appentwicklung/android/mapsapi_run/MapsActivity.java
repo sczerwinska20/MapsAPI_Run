@@ -33,7 +33,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationManager manager;
 
     private final int MIN_TIME=1000;//=> 1sec
-    private final int MIN_DIST=1;//=> 1meter
+    private final int MIN_DIST=1;//=> 1meter nur zum testen, bei der richtigen APp muss diese Sistanz ößer sein... mind 16
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +56,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         getLocationUpdates();
     }
-/**
+
+    /**
+     * Manipulates the map once available.
+     * This callback is triggered when the map is ready to be used.
+     * This is where we can add markers or lines, add listeners or move the camera. In this case,
+     * we just add a marker near Sydney, Australia.
+     * If Google Play services is not installed on the device, the user will be prompted to install
+     * it inside the SupportMapFragment. This method will only be triggered once the user has
+     * installed Google Play services and returned to the app.
+     */
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
+        // Add a marker in Sydney and move the camera
+        LatLng sydney = new LatLng(54, 13);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Your Location"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+    }
+
+    /**
  * Methode Prüft ob die User-permission im MAnifest hinterlegt ist.
  *Hierbei ist zu beachtend as die Gps Location genauer ist als die Internet-Location
  *  */
@@ -69,7 +89,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                         manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DIST, this);
-
                     } else if (manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                         manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DIST,this);
 
@@ -78,7 +97,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},101);
-
             }
         }
     }
@@ -95,24 +113,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-    }
 
     /**
      * Called when the location has changed. A wakelock may be held on behalf on the listener for
