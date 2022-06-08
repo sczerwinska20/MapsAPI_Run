@@ -19,10 +19,10 @@ public class MainActivity extends AppCompatActivity {
 
 
 // Write a message to the database
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
+       /* FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("message");
 
-        ((DatabaseReference) myRef).setValue("Hello, World!");
+        ((DatabaseReference) myRef).setValue("Hello, World!");*/
     }
 
     public void onClickOpenMaps(View view){

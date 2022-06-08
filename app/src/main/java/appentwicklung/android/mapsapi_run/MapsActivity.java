@@ -1,6 +1,5 @@
 package appentwicklung.android.mapsapi_run;
-
-
+//Benötigte Imports
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -40,7 +39,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private final int MIN_TIME=1000;//=> 1sec
     private final int MIN_DIST=1;//=> 1meter nur zum testen, bei der richtigen APp muss diese Sistanz ößer sein... mind 16
 
-    /*@Override
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -49,12 +48,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         manager= (LocationManager) getSystemService(LOCATION_SERVICE);
 
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
 //Methode: Requests Permission to USe the Location
-        getLocationUpdates();
+        //getLocationUpdates();
     }
 
     /**
@@ -92,8 +92,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     latLng =new LatLng(location.getLatitude(),location.getLongitude());
                     mMap.addMarker(new MarkerOptions().position(latLng).title("Position"));
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                }
-                catch(SecurityException e){
+                } catch(SecurityException e){
                     e.printStackTrace();
                 }
             }
@@ -164,7 +163,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * Methode Prüft ob die User-permission im MAnifest hinterlegt ist.
      *Hierbei ist zu beachtend as die Gps Location genauer ist als die Internet-Location
      *  */
-    private void getLocationUpdates() {
+    /*private void getLocationUpdates() {
         if (manager != null) {
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED &&
@@ -180,7 +179,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},101);
             }
         }
-    }
+    }*/
 
     /**
      *Methode zum abbrechen der Abufzeichnung
@@ -190,6 +189,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Toast.makeText(this, "Lauf abgebrochen", Toast.LENGTH_SHORT).show();
     }
 }
+
 
 
 
