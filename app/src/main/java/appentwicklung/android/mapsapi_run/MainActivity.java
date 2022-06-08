@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClickOpenMaps(View view){
         Intent intent =new Intent();
-        intent.setClass(getApplicationContext(),MapsActivity.class);
+        intent.setClass(getApplicationContext(), MapsActivity.class);
         startActivity(intent);
     }
 
@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         System.exit(0);
     }
 
-    public void onClickstopMaps(View view){
+    public void onClickToStatictic (View view){
         setContentView(R.layout.activity_data);
     }
 }

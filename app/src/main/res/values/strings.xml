@@ -10,6 +10,6 @@
     <string name="Save">Beenden &amp; Speichern</string>
     <string name="Share">Klick hier um deine Erfolge zu Teilen</string>
     <string name="Hello_text">Willkommen bei deiner Jogging App. Du befindest dich hier auf dem Startbildschirm. </string>
-
+    <string name="aktivity">Die Aufzeichnung wurde gestartet</string>
 
 </resources>
