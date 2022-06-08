@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -32,11 +33,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private DatabaseReference reference;
     private LocationManager manager;
+    private LocationListener locationListener;
+
+    private LatLng latLng;
 
     private final int MIN_TIME=1000;//=> 1sec
     private final int MIN_DIST=1;//=> 1meter nur zum testen, bei der richtigen APp muss diese Sistanz ößer sein... mind 16
 
-    @Override
+    /*@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -45,16 +49,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         manager= (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        reference= FirebaseDatabase.getInstance().getReference().child("User-101");
-        //User101 ist für demozwecke
-
-        //FirebaseDatabase.getInstance().getReference().setValue("This is my apptracker");
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment;
-        mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+//Methode: Requests Permission to USe the Location
         getLocationUpdates();
     }
 
@@ -67,38 +66,67 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+    @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(54, 13);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Your Location"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-    }
+        LatLng berlin = new LatLng(52.56, 13.37);
+        mMap.addMarker(new MarkerOptions().position(berlin).title("Your Location"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(berlin));
 
-    /**
- * Methode Prüft ob die User-permission im MAnifest hinterlegt ist.
- *Hierbei ist zu beachtend as die Gps Location genauer ist als die Internet-Location
- *  */
-    private void getLocationUpdates() {
-        if (manager != null) {
+        locationListener = new LocationListener(){
 
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED &&
-                    ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)== PackageManager.PERMISSION_GRANTED) {
-                                    if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                                        manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DIST, this);
-                                    } else if (manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                                        manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DIST,this);
-                                    } else {
-                                        Toast.makeText(this, "no Provider...", Toast.LENGTH_SHORT).show();
-                                    }
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},101);
+
+            /**
+             * Called when the location has changed. A wakelock may be held on behalf on the listener for
+             * some brief amount of time as this callback executes. If this callback performs long running
+             * operations, it is the client's responsibility to obtain their own wakelock if necessary.
+             *
+             * @param location the updated location
+             */
+            @Override
+            public void onLocationChanged( Location location) {
+                try{
+                    latLng =new LatLng(location.getLatitude(),location.getLongitude());
+                    mMap.addMarker(new MarkerOptions().position(latLng).title("Position"));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                }
+                catch(SecurityException e){
+                    e.printStackTrace();
+                }
             }
+
+            @Override
+            public void onStatusChanged(String s, int i, Bundle bundle) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String s) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String s) {
+
+            }
+        };
+        manager=(LocationManager) getSystemService(LOCATION_SERVICE);
+
+        try{
+            manager.requestLocationUpdates(LocationManager.GPS_PROVIDER,MIN_TIME,MIN_DIST,locationListener);
+        }
+        catch(SecurityException e){
+            e.printStackTrace();
+
         }
     }
 
+
+
+/*
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -111,7 +139,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-
+*/
     /**
      * Called when the location has changed. A wakelock may be held on behalf on the listener for
      * some brief amount of time as this callback executes. If this callback performs long running
@@ -131,6 +159,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void saveLocation(Location location) {
         reference.setValue(location);
+    }
+    /**
+     * Methode Prüft ob die User-permission im MAnifest hinterlegt ist.
+     *Hierbei ist zu beachtend as die Gps Location genauer ist als die Internet-Location
+     *  */
+    private void getLocationUpdates() {
+        if (manager != null) {
+
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)== PackageManager.PERMISSION_GRANTED) {
+                if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DIST, this);
+                } else if (manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                    manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DIST,this);
+                } else {
+                    Toast.makeText(this, "no Provider...", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},101);
+            }
+        }
     }
 
     /**

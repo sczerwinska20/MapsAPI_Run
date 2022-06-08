@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "663299020878",
+    "project_id": "mapsrun-a23ff",
+    "storage_bucket": "mapsrun-a23ff.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:663299020878:android:0b60d6e26b0d82a53e0b1f",
+        "android_client_info": {
+          "package_name": "appentwicklung.android.mapsapi_run"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "663299020878-duar701qn18o2pdvtnl0kn7j8fkmr18l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCNxdQFCJCyPlsJJ04uq6cqRNsDSEZDAU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "663299020878-duar701qn18o2pdvtnl0kn7j8fkmr18l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

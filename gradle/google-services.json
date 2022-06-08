@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "129949433726",
+    "firebase_url": "https://mapsapi-run-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "mapsapi-run",
+    "storage_bucket": "mapsapi-run.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:129949433726:android:91259803943b6f67037d2f",
+        "android_client_info": {
+          "package_name": "appentwicklung.android.mapsapi_run"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "129949433726-gj7oqdq3peu94k57kjacoc0ou7oi3sgp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD50xNgc09WTi4E8_BPMFcCaY1Jxz-BBy0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "129949433726-gj7oqdq3peu94k57kjacoc0ou7oi3sgp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
