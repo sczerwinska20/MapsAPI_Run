@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends AppCompatActivity {
@@ -18,11 +17,13 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-// Write a message to the database
-       /* FirebaseDatabase database = FirebaseDatabase.getInstance();
+// Zum testen der Datenbank verbdinung
+      /*  FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("message");
 
         ((DatabaseReference) myRef).setValue("Hello, World!");*/
+
+        FirebaseDatabase.getInstance().getReference().child("101");
     }
 
     public void onClickOpenMaps(View view){
