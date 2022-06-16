@@ -1,12 +1,11 @@
 package appentwicklung.android.mapsapi_run;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import com.google.firebase.database.FirebaseDatabase;
+import androidx.appcompat.app.AppCompatActivity;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -15,20 +14,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-
-// Zum testen der Datenbank verbdinung
-      /*  FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("message");
-
-        ((DatabaseReference) myRef).setValue("Hello, World!");*/
-
-        FirebaseDatabase.getInstance().getReference().child("101");
     }
 
     public void onClickOpenMaps(View view){
+
         Intent intent =new Intent();
         intent.setClass(getApplicationContext(), MapsActivity.class);
+        setContentView(R.layout.activity_maps);
         startActivity(intent);
     }
 
@@ -40,4 +32,6 @@ public class MainActivity extends AppCompatActivity {
     public void onClickToStatictic (View view){
         setContentView(R.layout.activity_data);
     }
+
+
 }

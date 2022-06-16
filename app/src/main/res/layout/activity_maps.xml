@@ -18,29 +18,23 @@
         android:paddingHorizontal="16dp">
 
         <Button
+            android:id="@+id/stop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="left"
-            android:onClick="onClickstopMaps"
-            android:text="@string/Stop"
-            />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
             android:onClick="onClicksaveRoute"
             android:text="@string/Save"
             />
 
-        <!--<Button
+        <Button
+            android:id="@+id/start_pause"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
-            android:onClick="onClickStartTracking"
-            android:text="@string/Start"
+            android:onClick="OnClickstartWorkoutSession"
+            android:text="@string/Start_Pause"
            />
-           -->
+
 
     </LinearLayout>
 

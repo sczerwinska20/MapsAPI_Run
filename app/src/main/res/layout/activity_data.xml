@@ -1,11 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <Button
-        android:id="@+id/button4"
+        android:id="@+id/buttonShare"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/Share" />
+    <Button
+        android:id="@+id/buttonPause"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/Back"
+        android:onClick="OnCLickBack"
+        tools:ignore="MissingConstraints" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/tableLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TableRow
+            android:id="@+id/tableRow1"
+            android:padding="3dip">
+
+            <TextView
+                android:id="@+id/textviewDate"
+                android:paddingRight="40dp"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textviewStartTime"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/tableRow2"
+            android:padding="3dip">
+
+            <TextView
+                android:id="@+id/textviewDuration"
+                android:paddingRight="40dp"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textviewDistance"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/tableRow3"
+            android:padding="3dip">
+
+            <TextView
+                android:id="@+id/textviewAverageSpeed"
+                android:paddingRight="40dp"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textviewMaxSpeed"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+        </TableRow>
+
+        <View
+            android:layout_height="1dip"
+            android:layout_marginTop="20dp"
+            android:background="#FF909090" />
+
+    </TableLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.jjoe64.graphview.GraphView
+            android:id="@+id/speedGraph"
+            android:layout_width="wrap_content"
+            android:layout_height="400dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="30dp" />
+
+        <com.jjoe64.graphview.GraphView
+            android:id="@+id/altitudeGraph"
+            android:layout_width="wrap_content"
+            android:layout_height="400dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="10dp" />
+
+        <com.jjoe64.graphview.GraphView
+            android:id="@+id/speedAltitudeGraph"
+            android:layout_width="wrap_content"
+            android:layout_height="400dp"
+            android:layout_marginRight="10dp" />
+
+    </LinearLayout>
+
+
+</ScrollView>

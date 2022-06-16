@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MapsActivity"
+    tools:context=".MainActivity"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
     >
@@ -14,14 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        tools:layout_editor_absoluteX="16dp">
-
-
-        <ImageView
-            android:id="@+id/imageView2"
-            android:layout_width="match_parent"
-            android:layout_height="73dp"
-            app:srcCompat="@drawable/common_google_signin_btn_text_dark" />
+        tools:layout_editor_absoluteX="16dp"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -41,32 +34,31 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+
             <Button
-                android:id="@+id/button"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:onClick="onClickOpenMaps"
-                android:text="@string/Start"
-                tools:ignore="MissingConstraints" />
+                android:layout_height="wrap_content"
+                android:text="@string/Start_Pause"
+                android:onClick="onClickOpenMaps"/>
 
             <Button
                 android:id="@+id/button3"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="wrap_content"
                 android:onClick="onClickToStatictic"
                 android:text="@string/Statistic" />
 
             <Button
                 android:id="@+id/button2"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="wrap_content"
                 android:text="@string/Close"
                 android:onClick="onClickCloseApp"/>
 
 
 
         </LinearLayout>
-    </LinearLayout>
+
 
 
 </RelativeLayout>
