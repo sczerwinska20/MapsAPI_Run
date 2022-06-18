@@ -76,7 +76,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private long mSessionId;
     private DBHelper myDatabase;
     private RouteBroadCastReceiver mRouteReceiver;
-    private LocationRequest mLocationRequest;
+    private LocationRequest myLocRequest;
     private Button mButtonStart;
     private GoogleApiClient mGoogleApiClient;
 
@@ -96,7 +96,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //startUi();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        mButtonStart = (Button) findViewById(R.id.start_pause);
+        mButtonStart = findViewById(R.id.start_pause);
         //Creates the GoogleApiClient
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */,
@@ -228,10 +228,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void createLocationRequest() {
         final String MNAME = "createLocationRequest()";
         if( DBG ) Log.i(TAG, MNAME + "entering...");
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(5000);
-        mLocationRequest.setFastestInterval(5000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        myLocRequest = new LocationRequest();
+        myLocRequest.setInterval(5000);
+        myLocRequest.setFastestInterval(5000);
+        myLocRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         if( DBG ) Log.i(TAG, MNAME + "exeting...");
     }
 
@@ -248,7 +248,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     //When the GoogleApi has connected
     @Override
     public void onConnected(Bundle connectionHint) {
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(mLocationRequest);
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(myLocRequest);
         PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
         result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
             @Override
@@ -281,7 +281,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode,  String permissions[], int[] grantResults) {
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         mLocationPermissionGranted = false;
@@ -308,13 +308,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         initMap();
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
-       /* LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions()
-                .position(sydney)
-                .title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));*/
-
           LatLng berlin = new LatLng(52.56, 13.37);
         mMap.addMarker(new MarkerOptions()
                 .position(berlin)
@@ -340,6 +333,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                mMap.getUiSettings().setZoomControlsEnabled(true);
             }else {
                 Toast.makeText(this, "Location not Found", Toast.LENGTH_SHORT).show();
         }
@@ -352,7 +346,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @SuppressWarnings({"MissingPermission"})
     public void startLocationUpdates() {
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, myLocRequest, this);
     }
 
     /**
@@ -499,20 +493,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         stopWorkoutSession();
     }
 
-    /**
-     * Stops the WorkoutSession
-     */
     public void stopWorkoutSession() {
         final String MNAME = "stopWorkoutSession()";
         if( DBG ) Log.i(TAG, MNAME + "entering...");
         //If a WorkoutSession has been started, paused or resumed - stop the WorkoutSession
-        if (getSessionStatus().equals("started") || getSessionStatus().equals("resumed") || getSessionStatus().equals("paused")) {
+        if (getSessionStatus().equals("started") || getSessionStatus().equals("resumed")
+                || getSessionStatus().equals("paused")) {
             stopService();
-
             //Sets the WorkoutSession status to "readyToStart" (so that new sessions can be started)
             setSessionStatus("readyToStart");
             mButtonStart.setText("Start session");
-
             mTimerHandler.removeCallbacks(mTimerRunnable);
             if( DBG ) Log.i(TAG, MNAME + "stoped session...");
             updateSessionInDb();
