@@ -9,7 +9,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="@string/aktivity"
-            android:textSize="20dp"
+            android:textSize="20sp"
             android:textStyle="bold"/>
 
     <LinearLayout
@@ -19,21 +19,19 @@
 
         <Button
             android:id="@+id/stop"
-            android:layout_width="wrap_content"
+            android:layout_width="182dp"
             android:layout_height="wrap_content"
             android:layout_gravity="left"
-            android:onClick="onClicksaveRoute"
-            android:text="@string/Save"
-            />
+            android:onClick="stopWorkoutSession"
+            android:text="@string/Save" />
 
         <Button
             android:id="@+id/start_pause"
-            android:layout_width="wrap_content"
+            android:layout_width="205dp"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
-            android:onClick="OnClickstartWorkoutSession"
-            android:text="@string/Start_Pause"
-           />
+            android:onClick="startWorkoutSession"
+            android:text="Start" />
 
 
     </LinearLayout>
@@ -43,5 +41,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".MapsActivity" />
+
+    <!--fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/nav_host_fragment" /-->
 
 </LinearLayout>

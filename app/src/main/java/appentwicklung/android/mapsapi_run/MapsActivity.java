@@ -1,5 +1,6 @@
 package appentwicklung.android.mapsapi_run;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,21 +9,31 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.v4.content.LocalBroadcastManager;
-import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -44,108 +55,62 @@ import appentwicklung.android.mapsapi_run.model.WorkoutLocation;
 import appentwicklung.android.mapsapi_run.model.WorkoutSession;
 
 /**
- * MainActivity class
- *
- * @author Daniel Johansson
+ * Die Klasse MapsActivity steuert die Hauptfunktionalität der App.
+ * Sie beinhaltete die Karte, so wie eine Vielzhal ebnötigter Methoden
+ * um die Mainfunktionalität abzudecken.
+ * Gleichzeiting Kommuniztiert die mit der Datenbank und speichert die Sessions
  */
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
-
-    private LocationListener locationListener;
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener,GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+    private final boolean DBG = true;//Zum Debuggen
+    private static final String TAG = "MapsActiviry"; //Zum Debuggen, gibt Classe an
     private GoogleMap mMap;
     private LatLng latLng;
-    private LocationManager locManager;
-    private Location location;
-
-    /**
-     * Last position of the user
-     */
-    private LatLng mLastPosition;
-
-    /**
-     * Permissions request flag
-     */
     private final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-
-    /**
-     * Boolean for permission (ACCESS_FINE_LOCATION) granted status
-     */
     private boolean mLocationPermissionGranted = false;
-
-    /**
-     * Total distance of the WorkoutSession
-     */
     private float mTotalDistance;
-
-    /**
-     * Elapsed time of the WorkoutSession in seconds
-     */
     private long mElapsedTime;
-
-    /**
-     * Distance TextView
-     */
-    private TextView mTextviewDistance;
-
-    /**
-     * Elapsed time TextView
-     */
     private TextView mTextviewTime;
-
-    /**
-     * Start session Button
-     */
-    private Button mButtonStart;
-
-    /**
-     * Handler for the elapsed time timer
-     */
     private Handler mTimerHandler;
-
-    /**
-     * Timer Runnable
-     */
     private Runnable mTimerRunnable;
-
-    /**
-     * WorkoutSession
-     */
     private WorkoutSession mWorkoutSession;
-
-    /**
-     * Session id of the WorkoutSession
-     */
     private long mSessionId;
-
-    /**
-     * DBHelper
-     */
     private DBHelper myDatabase;
-
-    /**
-     * RouteBroadCastReceiver
-     */
     private RouteBroadCastReceiver mRouteReceiver;
-
-    /**
-     * LocationRequest
-     */
     private LocationRequest mLocationRequest;
-    private Object GoogleApi;
+    private Button mButtonStart;
+    private GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        final String MNAME = "onCreate()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         super.onCreate(savedInstanceState);
-
-        createLocationRequest();
+        setContentView(R.layout.activity_maps);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
 
+        mapFragment.getMapAsync(this);
+        if( DBG ) Log.i(TAG, MNAME + "SuportMap Fragment...");
+
+        //startUi();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        mButtonStart = (Button) findViewById(R.id.start_pause);
+        //Creates the GoogleApiClient
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this /* FragmentActivity */,
+                        this /* OnConnectionFailedListener */)
+                .addConnectionCallbacks(this)
+                .addApi(LocationServices.API)
+                .build();
+
+        createLocationRequest();
+        if( DBG ) Log.i(TAG, MNAME + "Location Requested...");
         mRouteReceiver = new RouteBroadCastReceiver();
 
-        //If the TrackingService is running, stop it and set the SessionStatus to "readyToStart"
-        if (DataActivity.isServiceRunning()) {
+        //If the TrackingService in Data Activity  is running, stop it and set the SessionStatus to "readyToStart"
+        if (DataTracking.isServiceRunning()) {
             stopService();
             setSessionStatus("readyToStart");
         }
@@ -157,10 +122,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         myDatabase = new DBHelper(this.getApplicationContext());
     }
 
+
+
     @Override
     public void onStart() {
         super.onStart();
-
+        mGoogleApiClient.connect();
     }
 
     @Override
@@ -168,7 +135,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onPause();
 
         //If TrackingService isnt running - stop location updates
-        if ( DataActivity.isServiceRunning() == false) {
+        if (mGoogleApiClient.isConnected() && DataTracking.isServiceRunning() == false) {
+            stopLocationUpdates();
         }
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mRouteReceiver);
     }
@@ -189,15 +157,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         LocalBroadcastManager.getInstance(this).registerReceiver(mRouteReceiver, filter);
 
         //If TrackingService isnt running - start location updates that arent part of the session
-        if ( DataActivity.isServiceRunning() == false) {
+        if (mGoogleApiClient.isConnected() && !DataTracking.isServiceRunning()) {
             startLocationUpdates();
         }
     }
-
     @Override
     public void onStop() {
+        final String MNAME = "onStop()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         super.onStop();
-
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
     }
 
     @Override
@@ -210,19 +181,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         myDatabase = null;
     }
 
-
-
     /**
      * Sets the WorkoutSession´s status in SharedPreferences
      *
      * @param status status of the WorkoutSession. "readyToStart", "started" or "paused".
      */
     public void setSessionStatus(String status) {
-        SharedPreferences sharedPref = getSharedPreferences("com.daniel.workouttracker.PREFERENCES",
+        SharedPreferences sharedPref = getSharedPreferences("appentwicklung.android.mapsapi_run.PREFERENCES",
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString("sessionStatus", status);
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -231,29 +200,56 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * @return the status of the WorkoutSession
      */
     public String getSessionStatus() {
-        SharedPreferences sharedPref = getSharedPreferences("com.daniel.workouttracker.PREFERENCES",
+        final String MNAME = "getSessionStatus()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
+        SharedPreferences sharedPref = getSharedPreferences("appentwicklung.android.mapsapi_run.PREFERENCES",
                 Context.MODE_PRIVATE);
         String status = sharedPref.getString("sessionStatus", "");
+        if( DBG ) Log.i(TAG, MNAME + "exiting...");
         return status;
+
     }
+    public void onClickStop(View view){
+        final String MNAME = "onClickStop()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
+        onStop();
 
+        Intent intent =new Intent();
+        intent.setClass(getApplicationContext(), DisplayDataActivity.class);
+        setContentView(R.layout.activity_data);
+        startActivity(intent);
+        if( DBG ) Log.i(TAG, MNAME + "exiting...");
 
+    }
 
     /**
      * Creates a LocationRequest that is set to the update interval of 5 seconds
      */
     public void createLocationRequest() {
+        final String MNAME = "createLocationRequest()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(5000);
         mLocationRequest.setFastestInterval(5000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        if( DBG ) Log.i(TAG, MNAME + "exeting...");
     }
 
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d("google_connection", "Play services connection suspended");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d("google_connection", "Play services connection failed: ConnectionResult.getErrorCode() = "
+                + connectionResult.getErrorCode());
+    }
     //When the GoogleApi has connected
-  /*  @Override
+    @Override
     public void onConnected(Bundle connectionHint) {
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(mLocationRequest);
-        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings();
+        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
         result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
             @Override
             public void onResult(@NonNull LocationSettingsResult result) {
@@ -282,10 +278,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         });
-    }*/
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         mLocationPermissionGranted = false;
         switch (requestCode) {
@@ -308,66 +305,72 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        initMap();
         mMap = googleMap;
+
+        // Add a marker in Sydney and move the camera
+       /* LatLng sydney = new LatLng(-34, 151);
+        mMap.addMarker(new MarkerOptions()
+                .position(sydney)
+                .title("Marker in Sydney"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));*/
+
+          LatLng berlin = new LatLng(52.56, 13.37);
+        mMap.addMarker(new MarkerOptions()
+                .position(berlin)
+                .title("Your Location"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(berlin));
     }
 
     /**
      * Inits the GoogleMap with the device´s last known location and other settings
      */
-    @SuppressWarnings({"MissingPermission", "deprecation"})
+    @SuppressWarnings({"MissingPermission"})
     public void initMap() {
 
+        if (mLocationPermissionGranted) {
+            Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            if (lastLocation != null) {
+                LatLng position = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+                mMap.clear();
+                mMap.resetMinMaxZoomPreference();
 
-         locationListener = new LocationListener() {
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
 
-
-            @Override
-            public void onLocationChanged(@androidx.annotation.NonNull Location location) {
-                try {
-                    latLng = new LatLng(location.getLatitude(), location.getLongitude());
-                    mMap.addMarker(new MarkerOptions().position(latLng).title("Position"));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                } catch (SecurityException e) {
-                    e.printStackTrace();
-                }
-            }
-
-             LocationManager locManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        };
-
-
-            try{locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 3, (android.location.LocationListener) locationListener);
-            }
-            catch(SecurityException e) {
-                e.printStackTrace();
-
-            }
-
-
+                mMap.setMyLocationEnabled(true);
+                mMap.getUiSettings().setMyLocationButtonEnabled(true);
+            }else {
+                Toast.makeText(this, "Location not Found", Toast.LENGTH_SHORT).show();
+        }
+        }
     }
 
     /**
      * Starts location updates when a WorkoutSession hasn´t been started
      */
 
+    @SuppressWarnings({"MissingPermission"})
     public void startLocationUpdates() {
-        try{
-            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(latLng).title("Position"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        } catch(SecurityException e){
-            e.printStackTrace();
-        }
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+    }
+
+    /**
+     * Stops location updates (for when a WorkoutSession hasn´t been started)
+     */
+    public void stopLocationUpdates() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
     }
 
     @Override
     public void onLocationChanged(Location location) {
-        if (location != null){
+        updateLocationOnMap(location);
+        /* if (location != null){
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         }
         else{
             Toast.makeText(this, "no Location", Toast.LENGTH_SHORT).show();
-        }
+        }*/
 
     }
 
@@ -377,9 +380,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * @param location location to update map with
      */
     public void updateLocationOnMap(Location location) {
+        final String MNAME = "updateLocationOnMap()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         LatLng position = new LatLng(location.getLatitude(), location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
+
+        if( DBG ) Log.i(TAG, MNAME + "exeting, got new location...");
     }
 
     public void startWorkoutSession(View v) {
@@ -390,9 +397,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * Starts the WorkoutSession
      */
     public void startWorkoutSession() {
+        final String MNAME = "startWorkoutSession()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         //When sessionStatus=="readyToStart" - Session has not been started before
         if (getSessionStatus().equals("readyToStart")) {
             setSessionStatus("started");
+
+            stopLocationUpdates();
 
             String startTime = DateFormat.getTimeInstance().format(new Date());
             String startDate = DateFormat.getDateInstance(DateFormat.LONG, Locale.US).format(new Date());
@@ -405,8 +416,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mWorkoutSession.setId((int) mSessionId);
 
             mButtonStart.setText("Pause session");
-            handleTimer();                                      //Handles the elapsed time timer
-            startService();                                     //Starts the tracking service
+
+            handleTimer();
+            //Handles the elapsed time timer
+            startService();//Starts the tracking service
+            if( DBG ) Log.i(TAG, MNAME + "exiting...");
         }
 
         //When sessionStatus=="paused - Session is paused and will be resumed
@@ -432,7 +446,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * Handles the elapsed time timer
      */
     public void handleTimer() {
+        final String MNAME = "handleTimer()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
+
         if (getSessionStatus().equals("started")) {
+            if( DBG ) Log.i(TAG, MNAME + "1...");
             mElapsedTime = 0;
             mTimerHandler = new Handler();
             mTimerRunnable = new Runnable() {
@@ -441,27 +459,40 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     timerCount();
                 }
             };
+            if( DBG ) Log.i(TAG, MNAME + "2...");
             timerCount();
-        } else if (getSessionStatus().equals("resumed")) {
+            if( DBG ) Log.i(TAG, MNAME + "3...");
+        }
+        else if (getSessionStatus().equals("resumed")) {
             mTimerHandler = new Handler();
             mTimerRunnable = new Runnable() {
                 @Override
                 public void run() {
                     timerCount();
                 }
+
             };
+            if( DBG ) Log.i(TAG, MNAME + "4...");
             timerCount();
+            if( DBG ) Log.i(TAG, MNAME + "5...");
         } else
             mTimerHandler.removeCallbacks(mTimerRunnable);
+        if( DBG ) Log.i(TAG, MNAME + "exeting...");
     }
 
     /**
      * Increments mElapsedTime each second and sets the TextView
      */
     public void timerCount() {
+        final String MNAME = "timerCount()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
+
         mElapsedTime++;
-        mTextviewTime.setText(DateUtils.formatElapsedTime(mElapsedTime));
+        if( DBG ) Log.i(TAG, MNAME + "1...");
+      //  mTextviewTime.setText(DateUtils.formatElapsedTime(mElapsedTime));
+        if( DBG ) Log.i(TAG, MNAME + "2...");
         mTimerHandler.postDelayed(mTimerRunnable, 1000);
+        if( DBG ) Log.i(TAG, MNAME + "exetiinhg...");
     }
 
     public void stopWorkoutSession(View v) {
@@ -472,9 +503,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * Stops the WorkoutSession
      */
     public void stopWorkoutSession() {
+        final String MNAME = "stopWorkoutSession()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         //If a WorkoutSession has been started, paused or resumed - stop the WorkoutSession
-        if (getSessionStatus().equals("started") || getSessionStatus().equals("resumed")
-                || getSessionStatus().equals("paused")) {
+        if (getSessionStatus().equals("started") || getSessionStatus().equals("resumed") || getSessionStatus().equals("paused")) {
             stopService();
 
             //Sets the WorkoutSession status to "readyToStart" (so that new sessions can be started)
@@ -482,25 +514,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mButtonStart.setText("Start session");
 
             mTimerHandler.removeCallbacks(mTimerRunnable);
-
+            if( DBG ) Log.i(TAG, MNAME + "stoped session...");
             updateSessionInDb();
-
+            if( DBG ) Log.i(TAG, MNAME + "updated session in db...");
             drawEndMarker();            //Draws the end marker on the map
-
-            startLocationUpdates();     //Starts location updates (without a active WorkoutSession)
+            if( DBG ) Log.i(TAG, MNAME + "drew the endmarker...");
+            startLocationUpdates();//Starts location updates (without a active WorkoutSession)
+            if( DBG ) Log.i(TAG, MNAME + "restarts the locationupdates...");
         }
         //If no WorkoutSession is active - show Toast message
         else
             Toast.makeText(this, "No workout session active!", Toast.LENGTH_SHORT).show();
+        if( DBG ) Log.i(TAG, MNAME + "exeting...");
     }
 
-    /**
-     * Updates the WorkoutSession in the database
-     */
+
+
+
     public void updateSessionInDb() {
+        final String MNAME = "updateSessionInDb()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         //Saves the last location to the database
         saveLastLocationToDb();
-
+        if( DBG ) Log.i(TAG, MNAME + "Saved Session to Db...");
         mWorkoutSession.setDuration(mElapsedTime);
 
         //Formats and rounds the distance to 1 decimal
@@ -509,10 +545,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //Updates the WorkoutSession in db with duration and distance
         myDatabase.updateWorkoutSession(mWorkoutSession);
-
+        if( DBG ) Log.i(TAG, MNAME + "saves List of the Locations...");
         //Gets the list of locations from db and adds it to the WorkoutSession
         List<WorkoutLocation> locations = myDatabase.getLocationsFromSession(mSessionId);
         mWorkoutSession.setLocations(locations);
+        if( DBG ) Log.i(TAG, MNAME + "exeting...");
     }
 
     /**
@@ -520,42 +557,41 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     @SuppressWarnings({"MissingPermission"})
     public void saveLastLocationToDb() {
-
-       // Location lastKnownLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApi);
-        LatLng endPosition = new LatLng(location.getLatitude(),
-                location.getLongitude());
-
-        myDatabase.createWorkoutLocation(mSessionId, String.valueOf(location.getLatitude()),
-                String.valueOf(location.getLongitude()), HelperUtils.formatDouble(location.getAltitude()),
-                HelperUtils.convertSpeed(location.getSpeed()), mElapsedTime);
+        final String MNAME = "saveLastLocationToDb()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
+        Location lastKnownLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        LatLng endPosition = new LatLng(lastKnownLocation.getLatitude(),
+                lastKnownLocation.getLongitude());
+        if( DBG ) Log.i(TAG, MNAME + "got the last known position...");
+        myDatabase.createWorkoutLocation(mSessionId, String.valueOf(lastKnownLocation.getLatitude()),
+                String.valueOf(lastKnownLocation.getLongitude()), HelperUtils.formatDouble(lastKnownLocation.getAltitude()),
+                HelperUtils.convertSpeed(lastKnownLocation.getSpeed()), mElapsedTime);
+        if( DBG ) Log.i(TAG, MNAME + "exeting after caculating the needes datas...");
     }
 
     /**
      * Starts the TrackingService
      */
     public void startService() {
-        Intent serviceIntent = new Intent(this, DataActivity.class);
+        final String MNAME = "startService()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
+        Intent serviceIntent = new Intent(this, DataTracking.class);
         serviceIntent.putExtra("sessionId", Long.toString(mSessionId));
         serviceIntent.putExtra("elapsedTime", Long.toString(mElapsedTime));
-
+        if( DBG ) Log.i(TAG, MNAME + "started Data tracking...");
         this.startService(serviceIntent);
+        if( DBG ) Log.i(TAG, MNAME + "exeting...");
     }
 
     /**
      * Stops the TrackingService
      */
     public void stopService() {
-        Intent stopServiceIntent = new Intent(MapsActivity.this, DataActivity.class);
+        final String MNAME = "stopService()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
+        Intent stopServiceIntent = new Intent(MapsActivity.this, DataTracking.class);
         stopService(stopServiceIntent);
-    }
-
-    /**
-     * Clears the GoogleMap and the TextViews in the activity
-     */
-    public void clearSession() {
-        mMap.clear();
-        mTextviewTime.setText("");
-        mTextviewDistance.setText("");
+        if( DBG ) Log.i(TAG, MNAME + "exeting...");
     }
 
     /**
@@ -572,12 +608,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     /**
-     * Class for receiving location broadcasts from TrackingService
+     * Class for receiving location broadcasts from DataTracking
      */
     private class RouteBroadCastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals("appentwicklung.android.mapsapi_run. Pakcge.DataActivity")) {
+            if (intent.getAction().equals("appentwicklung.android.mapsapi_run.DataActivity")) {
                 long sessionId = Long.parseLong(intent.getExtras().getString("sessionId"));
 
                 WorkoutSession session = myDatabase.getWorkoutSession(sessionId);
@@ -589,37 +625,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     mMap.clear();
 
                     drawRoute(points);
-                    showDistance(points);
-
                 }
             }
-        }
-    }
-    /**
-     * Class for splash screen activity
-     *
-     * @author Daniel Johansson
-     */
-    public class SplashScreen extends AppCompatActivity {
-
-        /** Splash screen timeout */
-        private  int SPLASH_TIME_OUT = 2000;
-
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_log);
-
-            //Starts the Main activity after the SPLASH_TIME_OUT
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Intent i = new Intent(SplashScreen.this, MainActivity.class);
-                    startActivity(i);
-
-                    finish();
-                }
-            }, SPLASH_TIME_OUT);
         }
     }
 
@@ -648,7 +655,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     public void drawRoute(List<LatLng> points) {
         PolylineOptions polyOptions = new PolylineOptions();
-        polyOptions.color(Color.RED);
+        polyOptions.color(Color.BLACK);
         polyOptions.width(5);
         polyOptions.geodesic(true);
 
@@ -662,8 +669,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         polyOptions.addAll(points);
         mMap.addPolyline(polyOptions);
 
-        mLastPosition = points.get(points.size() - 1);
-        CameraUpdate cUpdate = CameraUpdateFactory.newLatLng(mLastPosition);
+        latLng = points.get(points.size() - 1);
+        CameraUpdate cUpdate = CameraUpdateFactory.newLatLng(latLng);
         mMap.animateCamera(cUpdate);
 
     }
@@ -673,7 +680,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     public void drawEndMarker() {
         mMap.addMarker(new MarkerOptions()
-                .position(mLastPosition)
+                .position(latLng)
                 .title("STOP"));
     }
 
@@ -695,19 +702,4 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return distance;
     }
 
-    /**
-     * Shows the total distance of the WorkoutSession in the TextView
-     *
-     * @param points list of LatLngs
-     */
-    public void showDistance(List<LatLng> points) {
-        mTotalDistance = calculateDistance(points);
-        float displayDistance = mTotalDistance / 1000;       //Converts metres to km
-        mTextviewDistance.setText(Float.toString(displayDistance) + " km");
-
-        //Locale used for "." in formatting of String
-        mTextviewDistance.setText(String.format(java.util.Locale.US, "%.2f", displayDistance) + " km");
-    }
-
 }
-
