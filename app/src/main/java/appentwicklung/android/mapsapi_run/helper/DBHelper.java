@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-
+import android.util.Log;
 
 
 import java.util.ArrayList;
@@ -21,16 +21,19 @@ import appentwicklung.android.mapsapi_run.model.WorkoutSession;
  * @author Daniel Johansson
  */
 public class DBHelper extends SQLiteOpenHelper {
+
+    private final boolean DBG = true;//Zum Debuggen
+    private static final String TAG = "DBHelper"; //Zum Debuggen, gibt Classe an
     
     //______________ Database Variables______________
         //My Database Object
-        private SQLiteDatabase myDataBase;
+      private SQLiteDatabase myDataBase;
         //Our SQlite Database Name
-        private static final String DATABASE_NAME = "runner.db";
+     private static final String DATABASE_NAME = "runner.db";
         //Tabel 1:for every SessioN
-        private static final String SESSIONS_TABLE = "sessions";
+           private static final String SESSIONS_TABLE = "sessions";
         //Colum names for Tabel1
-        private static final String KEY_SESSIONS_ID = "id";
+         private static final String KEY_SESSIONS_ID = "id";
         private static final String KEY_STARTTIME = "session_start_zeit";
         private static final String KEY_STARTDATE = "session_start_datum";
         private static final String KEY_DURATION = "dauer";
@@ -38,8 +41,8 @@ public class DBHelper extends SQLiteOpenHelper {
         //Tabel 2: the Locations for eache session(sameId)
         private static final String LOCATIONS_TABLE = "mylocations";
         //Colum names for Tabel2
-        private static final String KEY_LOCATIONS_ID = "id";
-        private static final String KEY_LOCATIONS_SESSIONS_ID = "locationsession_id";
+       private static final String KEY_LOCATIONS_ID = "id";
+       private static final String KEY_LOCATIONS_SESSIONS_ID = "locationsession_id";
         private static final String KEY_LATITUDE = "latitude";
         private static final String KEY_LONGITUDE = "longitude";
         private static final String KEY_SPEED = "geschwindigkeit";
@@ -50,7 +53,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 + " TEXT," + KEY_STARTDATE + " TEXT," + KEY_DURATION
                 + " INTEGER," + KEY_DISTANCE + " REAL" + ")";
         //Locations table Create statement
-        private static final String CREATE_LOCATIONS_TABLE = "CREATE TABLE " + LOCATIONS_TABLE
+       private static final String CREATE_LOCATIONS_TABLE = "CREATE TABLE " + LOCATIONS_TABLE
                 + "(" + KEY_LOCATIONS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_LATITUDE + " TEXT,"
                 + KEY_LONGITUDE + " TEXT," + " REAL," + KEY_SPEED + " REAL,"
                 + KEY_LOCATIONS_SESSIONS_ID + " INTEGER, " + KEY_ELAPSED_TIME + " INTEGER" + ")";
@@ -58,22 +61,41 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
         public DBHelper(Context context) {
+
         super(context, DATABASE_NAME, null, 1);
-        getDatabase();
+            final String MNAME = "DBHelper()";
+            if( DBG ) Log.i(TAG, MNAME + "entering...");
+            getDatabase();
+            if( DBG ) Log.i(TAG, MNAME + "exeting...");
     }
 
+    /**
+     * Called when the database is created for the first time. This is where the
+     * creation of tables and the initial population of the tables should happen.
+     *
+     * @param db The database.
+     */
+
     @Override
-    public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREATE_SESSION_TABLE);
-        db.execSQL(CREATE_LOCATIONS_TABLE);
-    }
+        public void onCreate(SQLiteDatabase db) {
+        final String MNAME = "onCreate()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
+            db.execSQL(CREATE_SESSION_TABLE);
+            db.execSQL(CREATE_LOCATIONS_TABLE);
+        if( DBG ) Log.i(TAG, MNAME + "exeting...");
+        }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        final String MNAME = "onUpgrade()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         db.execSQL("DROP TABLE IF EXISTS " + SESSIONS_TABLE);
+        if( DBG ) Log.i(TAG, MNAME + "SessionTabelOne...");
         db.execSQL("DROP TABLE IF EXISTS " + LOCATIONS_TABLE);
+        if( DBG ) Log.i(TAG, MNAME + "SessionTabelTwo...");
 
         onCreate(db);
+        if( DBG ) Log.i(TAG, MNAME + "exeting...");
     }
 
     /**
@@ -94,19 +116,21 @@ public class DBHelper extends SQLiteOpenHelper {
      * @return the id nr of the WorkoutSession
      */
     public long createWorkoutSession(WorkoutSession session) {
+        final String MNAME = "createWorkoutSession()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         ContentValues values = new ContentValues();
         values.put(KEY_STARTTIME, session.getStartTime());
         values.put(KEY_STARTDATE, session.getStartDate());
 
         long sessionId = 0;
-
+        if( DBG ) Log.i(TAG, MNAME + "before tray and catch...");
         try {
             //Inserts the WorkoutSession data in the db and returns an id
             sessionId = myDataBase.insert(SESSIONS_TABLE, null, values);
         } catch (SQLiteException e) {
             e.printStackTrace();
         }
-
+        if( DBG ) Log.i(TAG, MNAME + "afterthe catch ...");
         return sessionId;
     }
 
