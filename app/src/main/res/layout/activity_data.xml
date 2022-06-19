@@ -1,109 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <Button
-        android:id="@+id/buttonShare"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/Share" />
-    <Button
-        android:id="@+id/buttonPause"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/Back"
-        android:onClick="OnCLickBack"
-        tools:ignore="MissingConstraints" />
-
-    <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/tableLayout1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TableRow
-            android:id="@+id/tableRow1"
-            android:padding="3dip">
-
-            <TextView
-                android:id="@+id/textviewDate"
-                android:paddingRight="40dp"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/textviewStartTime"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-        </TableRow>
-
-        <TableRow
-            android:id="@+id/tableRow2"
-            android:padding="3dip">
-
-            <TextView
-                android:id="@+id/textviewDuration"
-                android:paddingRight="40dp"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/textviewDistance"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-        </TableRow>
-
-        <TableRow
-            android:id="@+id/tableRow3"
-            android:padding="3dip">
-
-            <TextView
-                android:id="@+id/textviewAverageSpeed"
-                android:paddingRight="40dp"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/textviewMaxSpeed"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-        </TableRow>
-
-        <View
-            android:layout_height="1dip"
-            android:layout_marginTop="20dp"
-            android:background="#FF909090" />
-
-    </TableLayout>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
-        <com.jjoe64.graphview.GraphView
-            android:id="@+id/speedGraph"
-            android:layout_width="wrap_content"
-            android:layout_height="400dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_marginTop="30dp" />
+        <ListView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-        <com.jjoe64.graphview.GraphView
-            android:id="@+id/altitudeGraph"
-            android:layout_width="wrap_content"
+        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/mapFragment"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
             android:layout_height="400dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginRight="10dp" />
+            map:mapType="normal"
+            tools:context="appentwicklung.android.mapsapi_run.Klasse">
 
-        <com.jjoe64.graphview.GraphView
-            android:id="@+id/speedAltitudeGraph"
+        </fragment>
+
+        <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/tableLayout1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TableRow
+                android:id="@+id/tableRow1"
+                android:padding="3dip">
+
+                <TextView
+                    android:id="@+id/textviewDate"
+                    android:paddingRight="40dp"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textviewStartTime"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/tableRow2"
+                android:padding="3dip">
+
+                <TextView
+                    android:id="@+id/textviewDistance"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textviewDuration"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/tableRow3"
+                android:padding="3dip">
+
+                <TextView
+                    android:id="@+id/textviewAverageSpeed"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/textviewMaxSpeed"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+            </TableRow>
+
+            <View
+                android:layout_height="1dip"
+                android:layout_marginTop="10dp"
+                android:background="#FF909090" />
+
+        </TableLayout>
+
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="400dp"
-            android:layout_marginRight="10dp" />
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/buttonViewStatistics"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="120dp"
+                android:layout_marginTop="20dp"
+                android:onClick="viewStatistics"
+                android:padding="10dp"
+                android:text="View session statistics"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
 
     </LinearLayout>
 

@@ -3,7 +3,7 @@
     <string name="app_name">MapsAPI_Run</string>
     <string name="title_activity_maps">MapsActivity</string>
     <string name="title_activity_data">DataActivity</string>
-    <string name="Start_Pause">Start/Pause</string>
+    <string name="Start_Pause">Start</string>
     <string name="Statistic">Hier gehts zu deinen Statistiken</string>
     <string name="Close">Klick hier zum verlassen</string>
     <string name="Pause">Pausieren</string>

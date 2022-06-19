@@ -9,34 +9,16 @@ import java.util.List;
 
 public class WorkoutSession implements Parcelable {
 
-    /**
-     * Id of the WorkoutSession
-     */
     private int mId;
 
-    /**
-     * Start date of the WorkoutSession
-     */
     private String mStartDate;
 
-    /**
-     * Start time of the WorkoutSession
-     */
     private String mStartTime;
 
-    /**
-     * Duration of the WorkoutSession, in seconds
-     */
     private long mDuration;
 
-    /**
-     * Distance of the WorkoutSession, in metres
-     */
     private float mDistance;
 
-    /**
-     * List of the WorkoutSession´s WorkoutLocations
-     */
     private List<WorkoutLocation> mLocations = new ArrayList<>();
 
     public WorkoutSession() {
@@ -45,10 +27,10 @@ public class WorkoutSession implements Parcelable {
     /**
      * Constructor
      *
-     * @param startDate start date of the WorkoutSession
-     * @param startTime start time of the WorkoutSession
-     * @param duration  duration of the WorkoutSession
-     * @param distance  distance of the WorkoutSession
+     * startDate start date of the WorkoutSession
+     *  startTime start time of the WorkoutSession
+     *  duration  duration of the WorkoutSession
+     *  distance  distance of the WorkoutSession
      */
     public WorkoutSession(String startDate, String startTime, long duration, float distance) {
         this.mStartDate = startDate;

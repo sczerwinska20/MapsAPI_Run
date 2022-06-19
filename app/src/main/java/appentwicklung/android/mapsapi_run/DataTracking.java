@@ -33,45 +33,29 @@ import appentwicklung.android.mapsapi_run.helper.HelperUtils;
 
 public class DataTracking extends Service implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
+    private final boolean DBG = true;//Zum Debuggen
+    private static final String TAG = "DataTracking"; //Zum Debuggen, gibt Classe an
 
-    /**
-     * GoogleApiClient
-     */
+
     private GoogleApiClient mGoogleApiClient;
 
-    /**
-     * Location Request
-     */
     private LocationRequest mLocationRequest;
 
-    /**
-     * Elapsed time of the workout session
-     */
     private long mElapsedTime;
 
-    /**
-     * Service start time
-     */
     private long mServiceStartTime;
 
-    /**
-     * Id of the WorkoutSession
-     */
     private long mSessionId;
 
-    /**
-     * DBHelper
-     */
     private DBHelper mDb;
 
-    /**
-     * Status of the service
-     */
     private static boolean runningService = false;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        final String MNAME = "oncreate()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
 
         mDb = new DBHelper(this);
 
@@ -92,6 +76,8 @@ public class DataTracking extends Service implements GoogleApiClient.ConnectionC
      * Creates a LocationRequest
      */
     protected void createLocationRequest() {
+        final String MNAME = "createLocRequest()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(5000);
         mLocationRequest.setFastestInterval(5000);
@@ -100,6 +86,9 @@ public class DataTracking extends Service implements GoogleApiClient.ConnectionC
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+        final String MNAME = "startComand()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         runningService = true;
 
         //Sets service start time in seconds
@@ -122,6 +111,8 @@ public class DataTracking extends Service implements GoogleApiClient.ConnectionC
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        final String MNAME = "onconnect()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(mLocationRequest);
         PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
         result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
@@ -158,6 +149,8 @@ public class DataTracking extends Service implements GoogleApiClient.ConnectionC
 
     @Override
     public void onLocationChanged(Location location) {
+        final String MNAME = "on loc changed()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         long locId = saveLocationToDb(location);          //Saves the location to db
 
         //Sends a local broadcast to the RouteBroadCastReceiver in MainActivity
@@ -174,6 +167,8 @@ public class DataTracking extends Service implements GoogleApiClient.ConnectionC
      * @return id of the stored WorkoutLocation
      */
     public long saveLocationToDb(Location location) {
+        final String MNAME = "saveLocationToDb()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         //Sets the elapsed time in service
         long elapsedTimeInService = (System.currentTimeMillis() / 1000) - mServiceStartTime;
 
@@ -190,6 +185,8 @@ public class DataTracking extends Service implements GoogleApiClient.ConnectionC
 
     @Override
     public void onDestroy() {
+        final String MNAME = "onDestroy()";
+        if( DBG ) Log.i(TAG, MNAME + "entering...");
         mGoogleApiClient.disconnect();
         Log.d("TrackingService", "TrackingService is being killed");
         runningService = false;

@@ -10,34 +10,16 @@ import android.os.Parcelable;
  */
 public class WorkoutLocation implements Parcelable {
 
-    /**
-     * Id of the WorkoutLocation
-     */
     private int mId;
 
-    /**
-     * Id of the WorkoutSession (used as foreign key)
-     */
     private int mSessionId;
 
-    /**
-     * Latitude of the WorkoutLocation
-     */
     private String mLatitude;
 
-    /**
-     * Longitude of the WorkoutLocation
-     */
     private String mLongitude;
 
-    /**
-     * Speed registered in the WorkoutLocation, in m/s
-     */
     private float mSpeed;
 
-    /**
-     * Elapsed time of the WorkoutSession, when the WorkoutLocation was registered
-     */
     private long mElapsedTime;
 
     public WorkoutLocation() {

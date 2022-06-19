@@ -55,7 +55,7 @@ public class DBHelper extends SQLiteOpenHelper {
         //Locations table Create statement
        private static final String CREATE_LOCATIONS_TABLE = "CREATE TABLE " + LOCATIONS_TABLE
                 + "(" + KEY_LOCATIONS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_LATITUDE + " TEXT,"
-                + KEY_LONGITUDE + " TEXT," + " REAL," + KEY_SPEED + " REAL,"
+                + KEY_LONGITUDE + " TEXT,"  + KEY_SPEED + " REAL,"
                 + KEY_LOCATIONS_SESSIONS_ID + " INTEGER, " + KEY_ELAPSED_TIME + " INTEGER" + ")";
 
 
