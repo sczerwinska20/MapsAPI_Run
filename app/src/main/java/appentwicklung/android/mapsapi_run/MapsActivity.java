@@ -170,15 +170,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onDestroy() {
         super.onDestroy();
-
         stopService();
-
         myDatabase.closeDB();
         myDatabase = null;
     }
 
-    /**
-     *
+    /**Setzt den WorkoutSession´s status in Shared Prefernces
+     * auf entweder  "readyToStart", "started" oder "paused".
      */
     public void setSessionStatus(String status) {
         SharedPreferences sharedPref = getSharedPreferences("appentwicklung.android.mapsapi_run.PREFERENCES",
@@ -187,7 +185,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         editor.putString("sessionStatus", status);
         editor.apply();
     }
-
+//ruft Status ab
     public String getSessionStatus() {
 
         SharedPreferences sharedPref = getSharedPreferences("appentwicklung.android.mapsapi_run.PREFERENCES",
@@ -197,16 +195,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return status;
 
     }
-
+// On Click Listener: zum Stopen der Session, wird nach Abruf des Beenden Buttons ausgeführt
     public void onClickStop(View view){
-
+//Wenn Data Tracking läuft wird der Service unterbrochen
         if(DataTracking.isServiceRunning() == true){
 
         stopWorkoutSession();
-        }else {
+        }else { // sonst gestopt
             onStop();
         }
-
+//activity Main wird wieder aufgerufen, und die MainActivity übernimmt erneut die Steuerung
         Intent intent =new Intent();
         intent.setClass(getApplicationContext(), MainActivity.class);
         setContentView(R.layout.activity_main);
@@ -215,28 +213,34 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
-     * Creates a LocationRequest that is set to the update interval of 5 seconds
+     * Funktion erstellt den benötigten LocationRequest alle 3 Sekunden
      */
     public void createLocationRequest() {
 
         myLocRequest = new LocationRequest();
-        myLocRequest.setInterval(5000);
-        myLocRequest.setFastestInterval(5000);
+        myLocRequest.setInterval(3000);
+        myLocRequest.setFastestInterval(3000);
         myLocRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
     }
-
+// Autogeneriert, gibt Nachricht aus
     @Override
     public void onConnectionSuspended(int i) {
         Log.d("google_connection", "Play services connection suspended");
     }
-
+    // Autogeneriert, gibt Nachricht aus
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d("google_connection", "Play services connection failed: ConnectionResult.getErrorCode() = "
                 + connectionResult.getErrorCode());
     }
-    //When the GoogleApi has connected
+
+    /**
+     * wenn die GoogleApi sich verbunden hat, wird folgende Methode abgerufen, sie erstellt einen Location Request,
+     * überprüft den Erfolg, und initalisiert die Map
+     * Falls das nicht möglich ist wird die Permission abgefragt
+     *
+     */
+
     @Override
     public void onConnected(Bundle connectionHint) {
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(myLocRequest);
@@ -248,34 +252,37 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 switch (status.getStatusCode()) {
                     case LocationSettingsStatusCodes.SUCCESS:
 
-                        //If permission ACCESS_FINE_LOCATION is granted, sets mLocationPermissionGranted
-                        //and calls the initMap method
                         if (ActivityCompat.checkSelfPermission(getApplicationContext(),
                                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                             mLocationPermissionGranted = true;
 
                             initMap();
 
-                            //If permission ACCESS_FINE_LOCATION is not granted, request permission from user
+                            //Wenn die Zustimmung zu: ACCESS_FINE_LOCATION noch nicht erfolgt ist,
+                            // wird die Zusimmung abgefragt
                         } else {
                             ActivityCompat.requestPermissions(MapsActivity.this,
                                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
                         }
                         break;
+                        //Andernfalls ist eine änderung nicht möglich, case fängt diese option ab
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                         break;
                 }
             }
         });
     }
+
+    /**
+     *Methode zum erzeugen der Map, mit Default auf Berlin Locations
+     *Fragt Locations ab mit der Methode createLocationRequest()
+     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
-
         initMap();
         mMap = googleMap;
-
 
           LatLng berlin = new LatLng(52.56, 13.37);
         mMap.addMarker(new MarkerOptions()
@@ -283,35 +290,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .title("Your Location"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(berlin));
 
-
             createLocationRequest();
 
     }
 
     /**
-     * Inits the GoogleMap with the device´s last known location and other settings
+     * initalisiert die Map, mit der Position welche das Gerät als leztes hatte
+     * wenn keine letzte Location vorliegt wird versucht selber eine zu finden
+     * Einstellung zur Ansicht der Map (wie LcoationButton, Plus-Minus-operator) werden erzeugt
      */
     @SuppressWarnings({"MissingPermission"})
     public void initMap() {
-
-
         if (mLocationPermissionGranted) {
 
-
             Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-
 
             if (lastLocation != null) {
 
                 LatLng position = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
                 mMap.clear();
                 mMap.resetMinMaxZoomPreference();
-
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
                 mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
-
                 mMap.setMyLocationEnabled(true);
-
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
                 mMap.getUiSettings().setZoomControlsEnabled(true);
 
@@ -322,7 +323,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
-     * Starts location updates when a WorkoutSession hasn´t been started
+     * Erzeugt Location updates bevor die Workout Session begonnen hat
      */
 
     @SuppressWarnings({"MissingPermission"})
@@ -331,28 +332,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
-     * Stops location updates (for when a WorkoutSession hasn´t been started)
+     * unterbricht die LocationUpdates
      */
     public void stopLocationUpdates() {
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
     }
 
+    /**
+     * Autogeneriert, Fragt Location ab, wenn möglich wird diese ausgegeben, wenn nicht Toast-Nachricht
+     */
     @Override
     public void onLocationChanged(Location location) {
         updateLocationOnMap(location);
-        /* if (location != null){
+         if (location != null){
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         }
         else{
             Toast.makeText(this, "no Location", Toast.LENGTH_SHORT).show();
-        }*/
+        }
 
     }
 
     /**
-     * Updates the GoogleMap with a new location (only for when a WorkoutSession hasn´t been started)
-     *
-     * @param location location to update map with
+     * Aktualisert die Map, mit neuen Locations, wenn die Session noch nicht gestartet wurde
      */
     public void updateLocationOnMap(Location location) {
 
@@ -367,34 +369,31 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
-     * Starts the WorkoutSession
+     * Wird abgerufen wenn die Workout Session über den Button mButtonStart bestarte wurde
      */
     public void startWorkoutSession() {
 
-        //When sessionStatus=="readyToStart" -Läuft nicht, dann keine Loc updtes
+        //Wenn sessionStatus=="readyToStart" -Läuft nicht, dann keine Loc updtes
         if (getSessionStatus().equals("readyToStart")) {
             setSessionStatus("started");
-//hier übernimmt DataTracking
+//hier wird die Klasse Datatracking beansprucht
             stopLocationUpdates();
 
             String startTime = DateFormat.getTimeInstance().format(new Date());
             String startDate = DateFormat.getDateInstance(DateFormat.LONG, Locale.US).format(new Date());
 
-
-            //Creates new WorkoutSession object and saves it to db
+            //erzeugt neue WorkoutSession objekt und speichert es in der DB
             mWorkoutSession = new WorkoutSession();
             mWorkoutSession.setStartTime(startTime);
             mWorkoutSession.setStartDate(startDate);
-            mSessionId = myDatabase.createWorkoutSession(mWorkoutSession);        //Saves session to db
+            mSessionId = myDatabase.createWorkoutSession(mWorkoutSession);
             mWorkoutSession.setId((int) mSessionId);
-
 
             mButtonStart.setText("Pause session");
 
             handleTimer();
-            //Handles the elapsed time timer
-            startService();//Starts the tracking service
-
+            //händelt den Timer, stopt zeitaufnahme
+            startService();//startet Data Tracking
         }
 
         //When sessionStatus=="paused - Session is paused and will be resumed
@@ -417,12 +416,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
-     * Handles the elapsed time timer
+     * händelt den Timer
      */
     public void handleTimer() {
-        final String MNAME = "handleTimer()";
-
-
+//Wenn session gestartet: wird ein neuer Timer gestartet
         if (getSessionStatus().equals("started")) {
 
             mElapsedTime = 0;
@@ -433,9 +430,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     timerCount();
                 }
             };
-
             timerCount();
-        }
+        } // Wenn Session pausiert, wird der Timer pausiert
         else if (getSessionStatus().equals("resumed")) {
             mTimerHandler = new Handler();
             mTimerRunnable = new Runnable() {
@@ -448,19 +444,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             timerCount();
 
-        } else
+        } else // sonst wird der Timer entfernt
             mTimerHandler.removeCallbacks(mTimerRunnable);
     }
 
     /**
-     * Increments mElapsedTime each second and sets the TextView
+     * erzeugt vergangene Zeit (mElapsed Time) mit einer Sekunde verzögerung
      */
     public void timerCount() {
 
         mElapsedTime++;
 
         mTimerHandler.postDelayed(mTimerRunnable, 1000);
-
     }
 
     public void stopWorkoutSession(View v) {
@@ -489,40 +484,38 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Toast.makeText(this, "No workout session active!", Toast.LENGTH_SHORT).show();
     }
 
-
-
-
+    /*
+    Updated Session un DB
+     */
     public void updateSessionInDb() {
-        final String MNAME = "updateSessionInDb()";
 
-        //Saves the last location to the database
+        //Speichert die letzte Location in der Datenbank
         saveLastLocationToDb();
-
+        //Setzt verstrichene zeit in der DB
         mWorkoutSession.setDuration(mElapsedTime);
 
-        //Formats and rounds the distance to 1 decimal
+        //Formatiert und rundet die Distanz auf eine nachKommaStelle
         float formattedDistance = HelperUtils.formatFloat(mTotalDistance);
         mWorkoutSession.setDistance(formattedDistance);
 
-        //Updates the WorkoutSession in db with duration and distance
+        //Aktualisiert die WorkoutSession in der DB mit dauer und distanz
         myDatabase.updateWorkoutSession(mWorkoutSession);
 
-        //Gets the list of locations from db and adds it to the WorkoutSession
+        // holt eine Liste der Locations  aud ser Datenbank fügt dies zur Klasse WorkoutSession hinzu
         List<WorkoutLocation> locations = myDatabase.getLocationsFromSession(mSessionId);
         mWorkoutSession.setLocations(locations);
-
     }
 
     /**
-     * Saves the last location of the WorkoutSession to the database
+     * Funktion speichert die letzte Location in der DB
      */
     @SuppressWarnings({"MissingPermission"})
     public void saveLastLocationToDb() {
-
+        // ruft letzet bekannte Location ab
         Location lastKnownLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         LatLng endPosition = new LatLng(lastKnownLocation.getLatitude(),
                 lastKnownLocation.getLongitude());
-
+// speichert diese in der DB
         myDatabase.createWorkoutLocation(mSessionId, String.valueOf(lastKnownLocation.getLatitude()),
                 String.valueOf(lastKnownLocation.getLongitude()), HelperUtils.formatDouble(lastKnownLocation.getAltitude()),
                 HelperUtils.convertSpeed(lastKnownLocation.getSpeed()), mElapsedTime);
@@ -530,11 +523,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
-     * Starts the TrackingService
+     * Startet DataTracking
      */
     public void startService() {
-
-
 
         Intent serviceIntent = new Intent(this, DataTracking.class);
         serviceIntent.putExtra("sessionId", Long.toString(mSessionId));
@@ -544,7 +535,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
-     * Stops the TrackingService
+     * Stopt DataTracking
      */
     public void stopService() {
 
@@ -554,20 +545,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
-     * Starts the ViewSessionDetailsActivity
-     */
-    public void startViewSessionDetails() {
-        Intent intent = new Intent(this, DataActivity.class);
-        intent.putExtra("session", mWorkoutSession);
-
-        //Calculates average speed (in km/h) and puts it as an Extra in the intent
-        intent.putExtra("averageSpeed", HelperUtils.calculateAverageSpeed(mWorkoutSession));
-        startActivity(intent);
-    }
-
-
-    /**
-     * Class for receiving location broadcasts from DataTracking
+     * Klasse zum Erhalten der Updates aus der Klasse DataActivity
      */
     private class RouteBroadCastReceiver extends BroadcastReceiver {
 
@@ -616,10 +594,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
-     * Draws a polyline between all locations in the WorkoutSession, and adds a marker for the
-     * start position
-     *
-     * @param points list of LatLng objects
+     * Zeichnet die Lini aller bisheringen aufgezeichneten Punkte der Aktuellen Session,
+     * die der Nutzer bereits hinter sich gelassen hat.
+     * Auch wird in dieser Funktion ein Marker auf den Startpunkt gesetzte
      */
     public void drawRoute(List<LatLng> points) {
         PolylineOptions polyOptions = new PolylineOptions();
@@ -644,30 +621,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
-     * Draws the end marker
+     * Funktion zum setzten des Endpunkts auf der Karte
      */
     public void drawEndMarker() {
         mMap.addMarker(new MarkerOptions()
                 .position(latLng)
                 .title("STOP"));
     }
-
-    /**
-     * Calculates the total distance between all locations
-     *
-     * @param points list of LatLngs
-     * @return total distance
-     */
-    public float calculateDistance(List<LatLng> points) {
-        float distance = 0;
-
-        for (int i = 1; i < points.size(); i++) {
-            float[] results = new float[2];
-            Location.distanceBetween(points.get(i - 1).latitude, points.get(i - 1).longitude,
-                    points.get(i).latitude, points.get(i).longitude, results);
-            distance += results[0];
-        }
-        return distance;
-    }
-
 }

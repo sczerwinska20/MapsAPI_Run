@@ -37,7 +37,7 @@ public class DataArray extends ArrayAdapter<WorkoutSession> {
         WorkoutSession session = getItem(position);
 
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.mussumbenann, parent, false);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_data, parent, false);
         }
 
         TextView textviewSessionId = (TextView) convertView.findViewById(R.id.textviewSessionId);

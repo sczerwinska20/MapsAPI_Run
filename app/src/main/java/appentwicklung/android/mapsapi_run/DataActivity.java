@@ -14,9 +14,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.List;
 
@@ -29,31 +26,14 @@ public class DataActivity extends AppCompatActivity implements OnMapReadyCallbac
     //private final boolean DBG = true;//Zum Debuggen
     private static final String TAG = "DataActivity"; //Zum Debuggen, gibt Classe an
     private GoogleMap mMap;
-    private GraphView mSpeedGraph;
-
-    private GraphView mSpeedAltitudeGraph;
-
-    private LineGraphSeries<DataPoint> mAltitudeSeries;
-
-    private LineGraphSeries<DataPoint> mSpeedSeries;
-
     private TextView mTextviewStartTime;
-
     private TextView mTextviewDate;
-
     private TextView mTextviewDuration;
-
     private TextView mTextviewDistance;
-
     private TextView mTextviewAverageSpeed;
-
     private TextView mTextviewMaxSpeed;
-
     private WorkoutSession mSession;
 
-    private double mElapsedTime;
-
-    private static String timeUnit;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

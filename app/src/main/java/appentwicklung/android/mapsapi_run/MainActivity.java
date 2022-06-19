@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
     /**
      *Funktion: Wenn Permission nicht gegeben wird wird die Zustimmung des Nutzer erfragt
      */
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode,
